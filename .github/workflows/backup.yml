@@ -1,0 +1,35 @@
+# Sao lưu cơ sở dữ liệu mỗi đêm. Chưa chạy thử: cần đặt secret BACKUP_DATABASE_URL trong repo
+# và thử khôi phục một lần trước khi tin vào nó.
+name: Sao lưu cơ sở dữ liệu
+
+on:
+  schedule:
+    # 19:00 UTC là 02:00 sáng giờ Việt Nam.
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Xuất dữ liệu bằng pg_dump
+        env:
+          # Chuỗi kết nối loại session pooler (cổng 5432) của Supabase; pg_dump không chạy
+          # được qua transaction pooler.
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        # Dùng pg_dump trong ảnh postgres để phiên bản không thấp hơn máy chủ.
+        # Bỏ nội dung bảng stay_photos để ảnh giấy tờ của khách không nằm trong bản sao lưu.
+        # pipefail: pg_dump lỗi (thiếu secret, sai mật khẩu) thì bước này phải báo lỗi, không
+        # được âm thầm lưu một file rỗng.
+        run: |
+          set -o pipefail
+          docker run --rm -e DATABASE_URL postgres:17 \
+            sh -c 'pg_dump "$DATABASE_URL" --no-owner --no-privileges --exclude-table-data=stay_photos' \
+            | gzip > backup.sql.gz
+
+      - name: Lưu file sao lưu
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.run_id }}
+          path: backup.sql.gz
+          retention-days: 90

@@ -1,0 +1,29 @@
+# Cấu hình triển khai API lên Render (gói miễn phí). Trên Render chọn New > Blueprint rồi trỏ
+# tới repo chứa file này. Nếu thư mục Be nằm trong một repo chung với Fe thì bỏ dấu # ở dòng
+# rootDir bên dưới.
+services:
+  - type: web
+    name: hotel-api
+    runtime: node
+    plan: free
+    region: singapore
+    # rootDir: Be
+    # --include=dev: bước đóng gói cần esbuild, vốn là gói chỉ dùng lúc phát triển.
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      # Chuỗi kết nối loại pooler của Supabase. Nhập tay trên trang Render.
+      - key: DATABASE_URL
+        sync: false
+      # Địa chỉ giao diện trên Cloudflare Pages, ví dụ https://ten-app.pages.dev. Nhập tay.
+      - key: CORS_ORIGIN
+        sync: false
+      # Render tự sinh hai giá trị dưới. Đổi PIN_SECRET về sau thì mọi PIN đã lưu không đọc được.
+      - key: PIN_SECRET
+        generateValue: true
+      # Xem giá trị này trên trang Render để nhập ở màn hình Cài đặt lần đầu.
+      - key: SETUP_CODE
+        generateValue: true

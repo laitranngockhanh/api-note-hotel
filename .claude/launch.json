@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "be-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "E:\\project\\Be", "run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "fe-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "E:\\project\\Fe", "run", "dev"],
+      "port": 5173
+    }
+  ]
+}
